@@ -1,6 +1,7 @@
 package fr.topcollegues;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -13,12 +14,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	JWTAuthorizationFilter jwtAuthorizationFilter;
+	
+	 @Value("${jwt.cookie}")
+	  private String TOKEN_COOKIE;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
 		http
-
 				.csrf().disable()
 
 				.cors().and()
@@ -32,8 +35,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.anyRequest().authenticated()
 
 				.and().headers().frameOptions().disable().and()
-				.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
-
+				.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+				
+				.logout()
+			      .logoutSuccessHandler((req, resp, auth) -> resp.setStatus(HttpStatus.OK.value()))
+			      
+			      .deleteCookies(TOKEN_COOKIE); 
 	}
 
 }
